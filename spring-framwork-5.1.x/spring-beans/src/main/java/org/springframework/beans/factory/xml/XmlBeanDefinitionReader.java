@@ -331,10 +331,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		}
 
 		try (InputStream inputStream = encodedResource.getResource().getInputStream()) {
+			// 把xml文件流封装为InputSource对象
 			InputSource inputSource = new InputSource(inputStream);
 			if (encodedResource.getEncoding() != null) {
 				inputSource.setEncoding(encodedResource.getEncoding());
 			}
+			// do!!!真正执行加载逻辑的地方
 			return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
 		}
 		catch (IOException ex) {
@@ -387,7 +389,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
+			// 读取xml信息并封装到Document对象中
 			Document doc = doLoadDocument(inputSource, resource);
+			// 解析Document对象，封装BeanDefinition对象并进行注册
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -507,8 +511,11 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		// 获取Registry的map，然后看看里面已经有了多少个BeanDefinition
 		int countBefore = getRegistry().getBeanDefinitionCount();
+		// 注册新的BeanDefinition
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		// 返回新增的BeanDefinition的数量
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 
@@ -526,6 +533,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 * Create the {@link XmlReaderContext} to pass over to the document reader.
 	 */
 	public XmlReaderContext createReaderContext(Resource resource) {
+		// 使用NamespaceHandlerResolver 来处理那些带有前缀的标签，如context，aop等
 		return new XmlReaderContext(resource, this.problemReporter, this.eventListener,
 				this.sourceExtractor, this, getNamespaceHandlerResolver());
 	}
