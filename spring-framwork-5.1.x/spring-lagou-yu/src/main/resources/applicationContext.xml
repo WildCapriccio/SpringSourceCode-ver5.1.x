@@ -6,10 +6,15 @@
         https://www.springframework.org/schema/beans/spring-beans.xsd
 ">
 
-	<bean id="lagouBean" class="com.lagou.edu.LagouBean"/>
+	<bean id="lagouBean" class="com.lagou.edu.LagouBean">
+		<property name="ItBean" ref="itBean"/>
+	</bean>
+	<bean id="itBean" class="com.lagou.edu.ItBean">
+		<property name="LagouBean" ref="lagouBean"/>
+	</bean>
 
 	<!--自定义的后置处理器要register成bean后，才能被IoC容器识别-->
-	<bean id="myBeanFactoryPostProcessor" class="com.lagou.edu.MyBeanFactoryPostProcessor"/>
-	<bean id="myBeanPostProcessor" class="com.lagou.edu.MyBeanPostProcessor"/>
+<!--	<bean id="myBeanFactoryPostProcessor" class="com.lagou.edu.MyBeanFactoryPostProcessor"/>-->
+<!--	<bean id="myBeanPostProcessor" class="com.lagou.edu.MyBeanPostProcessor"/>-->
 
 </beans>

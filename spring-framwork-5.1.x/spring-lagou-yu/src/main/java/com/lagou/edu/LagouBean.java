@@ -4,6 +4,12 @@ import org.springframework.beans.factory.InitializingBean;
 
 public class LagouBean implements InitializingBean {
 
+	private ItBean itBean;
+
+	public void setItBean(ItBean itBean) {
+		this.itBean = itBean;
+	}
+
 	public LagouBean() {
 		System.out.println("LagoutBean 无参构造函数...");
 	}
