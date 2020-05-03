@@ -589,10 +589,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 将当前尚未成型的bean加入三级缓存，并传入lamda表达式
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
-		// Initialize the bean instance. 初始化Bean实例
+		// Initialize the bean instance
 		Object exposedObject = bean;
 		try {
 			// 第2步 Bean属性填充
@@ -963,6 +964,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @return the object to expose as bean reference
 	 */
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
+		// 可以通过扩展SmartInstantiationAwareBeanPostProcessor 来扩展 升级 lagouBean 时候 要做的操作
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {

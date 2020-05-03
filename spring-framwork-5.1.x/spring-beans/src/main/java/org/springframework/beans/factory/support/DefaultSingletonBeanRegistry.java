@@ -134,11 +134,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @param beanName the name of the bean
 	 * @param singletonObject the singleton object
 	 */
+	// 被放在二级缓存的lagouBean，会通过这个方法被加入进singletonObjects，即单例池，即一级缓存中
 	protected void addSingleton(String beanName, Object singletonObject) {
 		synchronized (this.singletonObjects) {
-			this.singletonObjects.put(beanName, singletonObject);
-			this.singletonFactories.remove(beanName);
-			this.earlySingletonObjects.remove(beanName);
+			this.singletonObjects.put(beanName, singletonObject);  // 放入一级缓存中
+			this.singletonFactories.remove(beanName);  // 三级缓存中删除
+			this.earlySingletonObjects.remove(beanName);  // 二级缓存中删除
 			this.registeredSingletons.add(beanName);
 		}
 	}
@@ -155,8 +156,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
 			if (!this.singletonObjects.containsKey(beanName)) {
+				// singletonFactory 即放入三级缓存时的lamda表达式，那个表达式中可以做一些扩展操作
 				this.singletonFactories.put(beanName, singletonFactory);
-				this.earlySingletonObjects.remove(beanName);
+				this.earlySingletonObjects.remove(beanName); // early 即二级缓存
 				this.registeredSingletons.add(beanName);
 			}
 		}
@@ -176,23 +178,24 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @param allowEarlyReference whether early references should be created or not
 	 * @return the registered singleton object, or {@code null} if none found
 	 */
+	// 该方法是创建lagouBean依赖的itBean时才被触发
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
-				singletonObject = this.earlySingletonObjects.get(beanName);
+				singletonObject = this.earlySingletonObjects.get(beanName);  // 查二级缓存
 				if (singletonObject == null && allowEarlyReference) {
-					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
+					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);  // 查三级缓存
 					if (singletonFactory != null) {
-						singletonObject = singletonFactory.getObject();
-						this.earlySingletonObjects.put(beanName, singletonObject);
+						singletonObject = singletonFactory.getObject();  // 把lagouBean从三级缓存拿出
+						this.earlySingletonObjects.put(beanName, singletonObject);  // 把lagouBean放入二级缓存
 						this.singletonFactories.remove(beanName);
 					}
 				}
 			}
 		}
-		return singletonObject;
+		return singletonObject;  // 返回尚未成型的lagouBean（此时在二级缓存）
 	}
 
 	/**

@@ -869,6 +869,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		List<String> beanNames = new ArrayList<>(this.beanDefinitionNames);  // 放的bean的names，即bean的id
 
 		// Trigger initialization of all non-lazy singleton beans...
+		// 开始初始化所有非延迟加载的单例bean （主要步骤为getBean(beanname)）
 		for (String beanName : beanNames) {
 			// 往当前子bean合并来自于父beandefinition的信息
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
