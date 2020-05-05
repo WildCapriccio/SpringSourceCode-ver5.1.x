@@ -584,6 +584,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				* 填充Bean中属性，
 				* 初始化方法调用（例如 afterPropertiesSet方法，init-method方法）
 				* 调用BeanPostProcessor的after方法对实例bean进行后置处理
+				*
+				* 此处不仅创建了原始对象，还创建了原始对象的代理对象。
 				* */
 				finishBeanFactoryInitialization(beanFactory);
 

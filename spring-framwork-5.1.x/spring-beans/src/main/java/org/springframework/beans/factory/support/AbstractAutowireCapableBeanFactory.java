@@ -426,6 +426,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
 			throws BeansException {
 
+		/*
+		* 这里参数传入的bean可能有多个，可以在Object result 前加断点，然后设置只想看 LagouBean 即可。
+		* 下面for-loop 就是对每一个传入的bean，去取他们各自的 BeanPostProcessor（也有很多个），来run after 方法
+		* 这里要找到 proxy相关的 BeanPostProcessor -- 类似 xxxAutoProxyCreator
+		* */
 		Object result = existingBean;
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
 			Object current = processor.postProcessAfterInitialization(result, beanName);
@@ -580,6 +585,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		/* 这里在处理循环依赖，具体请见 circular branch */
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
@@ -591,6 +597,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
+		/* 完成处理循环依赖*/
 
 		// Initialize the bean instance. 初始化Bean实例
 		Object exposedObject = bean;
@@ -598,6 +605,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// 第2步 Bean属性填充
 			populateBean(beanName, mbd, instanceWrapper);
 			// SpringBean lifecycle 第3步 到 第9步
+			// 产生代理对象的时机是在BeanPostProcessor After 方法中
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
