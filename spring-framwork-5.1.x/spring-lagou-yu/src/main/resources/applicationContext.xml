@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xsi:schemaLocation="
 	    http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd
 ">
 
 	<bean id="lagouBean" class="com.lagou.edu.LagouBean"/>
@@ -11,5 +14,14 @@
 	<!--自定义的后置处理器要register成bean后，才能被IoC容器识别-->
 	<bean id="myBeanFactoryPostProcessor" class="com.lagou.edu.MyBeanFactoryPostProcessor"/>
 	<bean id="myBeanPostProcessor" class="com.lagou.edu.MyBeanPostProcessor"/>
+
+	<!-- 配置横切逻辑类 -->
+	<bean id="logUtils" class="com.lagou.edu.LogUtils"/>
+
+	<aop:config>
+		<aop:aspect ref="logUtils">
+			<aop:before method="beforeMethod" pointcut="execution(* com.lagou.edu.LagouBean.print())"/>
+		</aop:aspect>
+	</aop:config>
 
 </beans>

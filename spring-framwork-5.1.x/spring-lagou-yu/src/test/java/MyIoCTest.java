@@ -30,4 +30,12 @@ public class MyIoCTest {
 		System.out.println("This is lagouBean: " + result);
 		assertThat(result).isNotNull();
 	}
+
+	@Test
+	public void testMyAOP() {
+		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+
+		LagouBean result = applicationContext.getBean(LagouBean.class);
+		result.print();
+	}
 }

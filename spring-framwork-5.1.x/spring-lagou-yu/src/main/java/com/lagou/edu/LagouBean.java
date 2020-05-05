@@ -12,4 +12,8 @@ public class LagouBean implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		System.out.println("LagouBean 实现 InitializingBean的afterPropertiesSet方法...");
 	}
+
+	public void print() {
+		System.out.println("LagouBean的业务逻辑 print方法 执行");
+	}
 }
