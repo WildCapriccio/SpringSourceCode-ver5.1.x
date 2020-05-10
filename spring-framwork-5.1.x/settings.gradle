@@ -62,4 +62,5 @@ settings.gradle.projectsLoaded {
 	}
 }
 include 'spring-lagou-yu'
+include 'spring-lagou-yu-mvc'
 
