@@ -930,7 +930,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
 		request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
 
-		if (this.flashMapManager != null) {
+		if (this.flashMapManager != null) {   // flash 即重定向时，参数携带的flash属性
 			FlashMap inputFlashMap = this.flashMapManager.retrieveAndUpdate(request, response);
 			if (inputFlashMap != null) {
 				request.setAttribute(INPUT_FLASH_MAP_ATTRIBUTE, Collections.unmodifiableMap(inputFlashMap));
@@ -940,6 +940,7 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 
 		try {
+			// 真正干活的 do 逻辑
 			doDispatch(request, response);
 		}
 		finally {
@@ -1009,10 +1010,14 @@ public class DispatcherServlet extends FrameworkServlet {
 			Exception dispatchException = null;
 
 			try {
+				// 1 检查是否是文件上传请求
 				processedRequest = checkMultipart(request);
 				multipartRequestParsed = (processedRequest != request);
 
 				// Determine handler for the current request.
+				/*
+				* 2 找能处理当前请求的Handler
+				* */
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);
@@ -1020,6 +1025,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Determine handler adapter for the current request.
+				// 3 拿到HandlerAdapter
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
@@ -1037,6 +1043,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Actually invoke the handler.
+				// 4 实际处理请求，返回结果视图对象
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
