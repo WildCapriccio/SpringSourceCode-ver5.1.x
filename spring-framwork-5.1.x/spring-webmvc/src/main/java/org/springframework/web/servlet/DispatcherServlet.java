@@ -1135,6 +1135,7 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		// Did the handler return a view to render?
 		if (mv != null && !mv.wasCleared()) {
+			// 若获得的odelAndView不为空，就渲染
 			render(mv, request, response);
 			if (errorView) {
 				WebUtils.clearErrorRequestAttributes(request);
@@ -1374,7 +1375,7 @@ public class DispatcherServlet extends FrameworkServlet {
 				(this.localeResolver != null ? this.localeResolver.resolveLocale(request) : request.getLocale());
 		response.setLocale(locale);
 
-		View view;
+		View view;  // 用 ModelAndView 对这个空的View进行赋值
 		String viewName = mv.getViewName();
 		if (viewName != null) {
 			// We need to resolve the view name.
@@ -1439,7 +1440,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	@Nullable
 	protected View resolveViewName(String viewName, @Nullable Map<String, Object> model,
 			Locale locale, HttpServletRequest request) throws Exception {
-
+		// 用视图解析器去封装 (在 Spring-lagou-yu-mvc module中，springmvc.xml 有对 InternalResourceViewResolver 进行配置)
 		if (this.viewResolvers != null) {
 			for (ViewResolver viewResolver : this.viewResolvers) {
 				View view = viewResolver.resolveViewName(viewName, locale);
