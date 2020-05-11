@@ -313,39 +313,39 @@ public class DispatcherServlet extends FrameworkServlet {
 
 	/** MultipartResolver used by this servlet. */
 	@Nullable
-	private MultipartResolver multipartResolver;
+	private MultipartResolver multipartResolver;  // 多部件解析器
 
 	/** LocaleResolver used by this servlet. */
 	@Nullable
-	private LocaleResolver localeResolver;
+	private LocaleResolver localeResolver;  // 区域化、国际化解析器
 
 	/** ThemeResolver used by this servlet. */
 	@Nullable
-	private ThemeResolver themeResolver;
+	private ThemeResolver themeResolver;  // 主题解析器
 
 	/** List of HandlerMappings used by this servlet. */
 	@Nullable
-	private List<HandlerMapping> handlerMappings;
+	private List<HandlerMapping> handlerMappings;  // 处理器映射器组件
 
 	/** List of HandlerAdapters used by this servlet. */
 	@Nullable
-	private List<HandlerAdapter> handlerAdapters;
+	private List<HandlerAdapter> handlerAdapters;  // 处理器适配器组件
 
 	/** List of HandlerExceptionResolvers used by this servlet. */
 	@Nullable
-	private List<HandlerExceptionResolver> handlerExceptionResolvers;
+	private List<HandlerExceptionResolver> handlerExceptionResolvers;  // 异常解析器组件
 
 	/** RequestToViewNameTranslator used by this servlet. */
 	@Nullable
-	private RequestToViewNameTranslator viewNameTranslator;
+	private RequestToViewNameTranslator viewNameTranslator;  // 默认视图名转换器组件 （默认把请求地址当做视图名称）
 
 	/** FlashMapManager used by this servlet. */
 	@Nullable
-	private FlashMapManager flashMapManager;
+	private FlashMapManager flashMapManager;  // flash属性管理组件
 
 	/** List of ViewResolvers used by this servlet. */
 	@Nullable
-	private List<ViewResolver> viewResolvers;
+	private List<ViewResolver> viewResolvers;  // 视图解析器
 
 
 	/**
@@ -1284,6 +1284,12 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * @throws ServletException if no HandlerAdapter can be found for the handler. This is a fatal error.
 	 */
 	protected HandlerAdapter getHandlerAdapter(Object handler) throws ServletException {
+		/*
+		* handlerAdapters 是 Interface，有3个实现类，遍历他们，看是否能支持当前handler：
+		* 	[0] = HttpRequestHandlerAdapter
+		*  	[1] = SimpleControllerHandlerAdapter
+		* 	[2] = RequestMappingHandlerAdapter
+		* */
 		if (this.handlerAdapters != null) {
 			for (HandlerAdapter adapter : this.handlerAdapters) {
 				if (adapter.supports(handler)) {
