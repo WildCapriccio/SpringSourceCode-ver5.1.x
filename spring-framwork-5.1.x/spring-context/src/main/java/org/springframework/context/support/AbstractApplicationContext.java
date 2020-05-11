@@ -593,6 +593,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				* Last step: publish corresponding event.
 				* 完成context的刷新。
 				* 主要调用LifecycleProcessor的 onRefresh 方法。
+				*
+				* 该方法最终也通过publish events 触发了事件监听，最后触发 DispatcherServlet 的 onRefresh 方法，
+				* 从而初始化了 Spring MVC 的九大组件。
 				* */
 				finishRefresh();
 			}
