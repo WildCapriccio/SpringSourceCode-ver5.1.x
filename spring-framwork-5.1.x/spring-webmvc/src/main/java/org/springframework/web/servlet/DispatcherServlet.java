@@ -1243,6 +1243,11 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@Nullable
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		/*
+		* handlerMappings 是个list，有2个元素:
+		* 	[0] = BeanNameUrlHandlerMapping, 适用于 xml 配置
+		*   [1] = RequestMappingHandlerMapping, 适用于 注解 配置
+		* */
 		if (this.handlerMappings != null) {
 			for (HandlerMapping mapping : this.handlerMappings) {
 				HandlerExecutionChain handler = mapping.getHandler(request);
