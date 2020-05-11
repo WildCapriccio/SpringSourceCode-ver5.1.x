@@ -1016,41 +1016,46 @@ public class DispatcherServlet extends FrameworkServlet {
 
 				// Determine handler for the current request.
 				/*
-				* 2 找能处理当前请求的Handler
-				* */
+				 * 2 找能处理当前请求的HandlerExecutionChain。
+				 * HandlerExecutionChain 中封装了Handler 和 Interceptor。
+				 * */
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
-					noHandlerFound(processedRequest, response);
+					noHandlerFound(processedRequest, response);  // 即返回404
 					return;
 				}
 
 				// Determine handler adapter for the current request.
-				// 3 拿到HandlerAdapter
+				// 3 拿到HandlerAdapter（能够正确调用Handler方法的反射工具类）
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
 				String method = request.getMethod();
 				boolean isGet = "GET".equals(method);
 				if (isGet || "HEAD".equals(method)) {
+					// 如果拿到最近修改的东西，需要进行缓存
 					long lastModified = ha.getLastModified(request, mappedHandler.getHandler());
 					if (new ServletWebRequest(request, response).checkNotModified(lastModified) && isGet) {
 						return;
 					}
 				}
 
+				// 执行 Interceptor 的 preHandle 方法
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
 
 				// Actually invoke the handler.
-				// 4 实际处理请求，返回结果视图对象
+				// 4 HandlerAdapter 实际处理请求，返回结果视图对象
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
 					return;
 				}
 
+				// 5 结果视图对象的处理
 				applyDefaultViewName(processedRequest, mv);
+				// Interceptor 的 postHandle 方法
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1061,9 +1066,11 @@ public class DispatcherServlet extends FrameworkServlet {
 				// making them available for @ExceptionHandler methods and other scenarios.
 				dispatchException = new NestedServletException("Handler dispatch failed", err);
 			}
+			// 6 跳转页面并渲染
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}
 		catch (Exception ex) {
+			// 调用 Interceptor 的 afterCompletion 方法
 			triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
 		}
 		catch (Throwable err) {
