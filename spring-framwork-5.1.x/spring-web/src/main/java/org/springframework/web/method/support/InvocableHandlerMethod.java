@@ -131,10 +131,12 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	public Object invokeForRequest(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		// Step 1 将request中的参数转换为当前handler的参数形式
 		Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Arguments: " + Arrays.toString(args));
 		}
+		// Step 2 反射调用
 		return doInvoke(args);
 	}
 
@@ -147,6 +149,7 @@ public class InvocableHandlerMethod extends HandlerMethod {
 	protected Object[] getMethodArgumentValues(NativeWebRequest request, @Nullable ModelAndViewContainer mavContainer,
 			Object... providedArgs) throws Exception {
 
+		// 获取当前目标handler方法所声明的所有参数，包括各参数的：参数名、类型、位置、携带的注解 等。
 		MethodParameter[] parameters = getMethodParameters();
 		if (ObjectUtils.isEmpty(parameters)) {
 			return EMPTY_ARGS;
@@ -154,16 +157,27 @@ public class InvocableHandlerMethod extends HandlerMethod {
 
 		Object[] args = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
+			// 针对目标handler方法的某个参数
 			MethodParameter parameter = parameters[i];
 			parameter.initParameterNameDiscovery(this.parameterNameDiscoverer);
+			/*
+			* 先查 providedArgs，这是call现在这个方法时后端母方法传进来的，
+			* 若他不为空，则会尽量使用他里面的参数（如果能匹配得上），默认他是空的。
+			* */
 			args[i] = findProvidedArgument(parameter, providedArgs);
 			if (args[i] != null) {
 				continue;
 			}
+			/*
+			* 再查 request中传进来的参数。
+			* 查之前，先去遍历Spring容器中所有的ArgumentResolver，确认存在 能支持解析当前被针对的参数 的ArgumentResolver
+			* 若不存在，就抛异常。
+			* */
 			if (!this.resolvers.supportsParameter(parameter)) {
 				throw new IllegalStateException(formatArgumentError(parameter, "No suitable resolver"));
 			}
 			try {
+				// 使用找到的 ArgumentResolver 的 resolveArgument 方法 去 request 中找参数，若能匹配上，就进行塞值
 				args[i] = this.resolvers.resolveArgument(parameter, mavContainer, request, this.dataBinderFactory);
 			}
 			catch (Exception ex) {

@@ -96,16 +96,17 @@ public abstract class AbstractNamedValueMethodArgumentResolver implements Handle
 	public final Object resolveArgument(MethodParameter parameter, @Nullable ModelAndViewContainer mavContainer,
 			NativeWebRequest webRequest, @Nullable WebDataBinderFactory binderFactory) throws Exception {
 
-		NamedValueInfo namedValueInfo = getNamedValueInfo(parameter);
+		NamedValueInfo namedValueInfo = getNamedValueInfo(parameter); // 对request参数的封装
 		MethodParameter nestedParameter = parameter.nestedIfOptional();
 
-		Object resolvedName = resolveStringValue(namedValueInfo.name);
+		Object resolvedName = resolveStringValue(namedValueInfo.name); // 这里的参数名称为 name
 		if (resolvedName == null) {
 			throw new IllegalArgumentException(
 					"Specified name must not resolve to null: [" + namedValueInfo.name + "]");
 		}
 
-		Object arg = resolveName(resolvedName.toString(), nestedParameter, webRequest);
+		// 真正判断request 参数是否能匹配
+		Object arg = resolveName(resolvedName.toString(), nestedParameter, webRequest); // 获得 Jenny
 		if (arg == null) {
 			if (namedValueInfo.defaultValue != null) {
 				arg = resolveStringValue(namedValueInfo.defaultValue);
@@ -191,6 +192,7 @@ public abstract class AbstractNamedValueMethodArgumentResolver implements Handle
 		if (exprResolver == null || this.expressionContext == null) {
 			return value;
 		}
+		// request进来的参数的value可能有些占位符，需要处理一下
 		return exprResolver.evaluate(placeholdersResolved, this.expressionContext);
 	}
 

@@ -775,11 +775,15 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		checkRequest(request);
 
 		// Execute invokeHandlerMethod in synchronized block if required.
+		// 判断当前是否需要支持 在同一个session中只能线性处理请求（因为session本身是线程不安全的，多个请求过来要考虑如何handle）
 		if (this.synchronizeOnSession) {
 			HttpSession session = request.getSession(false);
 			if (session != null) {
+				// 为当前session生成一个唯一的key对象
 				Object mutex = WebUtils.getSessionMutex(session);
+				// 给该对象加锁
 				synchronized (mutex) {
+					// 此处才去 invoke handler中的method，继续进行参数等的适配等
 					mav = invokeHandlerMethod(request, response, handlerMethod);
 				}
 			}
@@ -790,6 +794,7 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 		}
 		else {
 			// No synchronization on session demanded at all...
+			// 当前若不需要对session进行以上同步处理，就直接invoke
 			mav = invokeHandlerMethod(request, response, handlerMethod);
 		}
 
@@ -835,17 +840,31 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 	@Nullable
 	protected ModelAndView invokeHandlerMethod(HttpServletRequest request,
 			HttpServletResponse response, HandlerMethod handlerMethod) throws Exception {
-
+		/*
+		* HandlerMethod class 中包含 Method，Bean等，相当于手写mvc时的Handler class
+		* */
 		ServletWebRequest webRequest = new ServletWebRequest(request, response);
 		try {
+			/*
+			* 获取 容器中全局有InitBinder注解的方法 和 当前HandlerMethod所对应的Controller中拥有InitBinder注解的方法，
+			* 用于进行参数的绑定。
+			* */
 			WebDataBinderFactory binderFactory = getDataBinderFactory(handlerMethod);
+
+			/*
+			 * 获取 容器中全局有ModelAttribute注解的方法 和 当前HandlerMethod所对应的Controller中拥有ModelAttribute注解的方法，
+			 * 这些方法会在目标方法invoke之前先执行。
+			 * */
 			ModelFactory modelFactory = getModelFactory(handlerMethod, binderFactory);
 
+			// 讲 handlerMethod 封装为 ServletInvocableHandlerMethod
 			ServletInvocableHandlerMethod invocableMethod = createInvocableHandlerMethod(handlerMethod);
 			if (this.argumentResolvers != null) {
+				// 不同参数需要不同的参数解析器(argumentResolver)
 				invocableMethod.setHandlerMethodArgumentResolvers(this.argumentResolvers);
 			}
 			if (this.returnValueHandlers != null) {
+				// 不同返回值需要不同的返回值解析器
 				invocableMethod.setHandlerMethodReturnValueHandlers(this.returnValueHandlers);
 			}
 			invocableMethod.setDataBinderFactory(binderFactory);
@@ -853,6 +872,8 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 
 			ModelAndViewContainer mavContainer = new ModelAndViewContainer();
 			mavContainer.addAllAttributes(RequestContextUtils.getInputFlashMap(request));
+
+			// initModel 会调用拥有 @ModelAttribute 的方法，从而保证这些方法 能在目标Handler方法调用前先解决掉
 			modelFactory.initModel(webRequest, mavContainer, invocableMethod);
 			mavContainer.setIgnoreDefaultModelOnRedirect(this.ignoreDefaultModelOnRedirect);
 
@@ -876,11 +897,13 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				invocableMethod = invocableMethod.wrapConcurrentResult(result);
 			}
 
+			// 真正去执行 invoke 方法
 			invocableMethod.invokeAndHandle(webRequest, mavContainer);
 			if (asyncManager.isConcurrentHandlingStarted()) {
 				return null;
 			}
 
+			// 对封装的ModelAndView进行处理（主要是判断当前请求是否需要重定向，若需要，则还会判断是否需将FlashAttributes封装到新请求中）
 			return getModelAndView(mavContainer, modelFactory, webRequest);
 		}
 		finally {

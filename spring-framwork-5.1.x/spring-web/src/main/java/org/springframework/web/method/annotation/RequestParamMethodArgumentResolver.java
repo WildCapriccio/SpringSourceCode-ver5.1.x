@@ -178,12 +178,12 @@ public class RequestParamMethodArgumentResolver extends AbstractNamedValueMethod
 			}
 		}
 		if (arg == null) {
-			String[] paramValues = request.getParameterValues(name);
+			String[] paramValues = request.getParameterValues(name); // 从request中拿到参数的值
 			if (paramValues != null) {
 				arg = (paramValues.length == 1 ? paramValues[0] : paramValues);
 			}
 		}
-		return arg;
+		return arg; // 这里的参数的值是 Jenny
 	}
 
 	@Override
